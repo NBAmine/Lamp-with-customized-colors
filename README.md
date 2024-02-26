@@ -1,4 +1,9 @@
-Customizing NeoPixel Compatible LED Ring (WS2812) colors and brightness using ILI9341 2.8" Touch Screen Lcd. The color is modulated using RGB 24 bit values that we converte automatically to 16 bit - colors setting method (setPixelColor) accepts only 16 bits RGB color
+Customizing NeoPixel Compatible LED Ring (WS2812) colors and brightness using ILI9341 2.8" Touch Screen Lcd, the color is modulated using RGB 24 bit values.
+
+![Screenshot (504)](https://github.com/NBAmine/Lamp-with-customized-colors/assets/86920473/7fdbf755-d167-4b3e-b724-b4cbb852f5dc)
+
+### Note :
+Later in the code, the conversion from RGB 24 bits to RGB 16 bits is due to a method (fillRoudRect) that accepts only uint16_t colors as arguments, we use this function to represent the resulting color on screen from different r g b values selected
 
 # Documentation
 ### **barClicked()**
@@ -11,11 +16,11 @@ light the neo pixel lamp using the RGB values picked on screen
 
 ### **decimalToBinary(int color, int array)**
 
-transfer a color represented in decimal to binary and save it in an array passed as an argument
+transfer a color represented in decimal to binary and save it in an array passed as an argument - in our case, the array is a global variable-
 
 ### **binaryToDecimal(int array)**
 
-return decimal representation (uint16_t) of a color represented in binary (array of 8 bits)
+return decimal representation (uint16_t) of a color represented in binary (array of 16 bits)
 
 ### **brightnessInput()**
 
