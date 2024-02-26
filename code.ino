@@ -19,12 +19,13 @@ Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 Adafruit_FT6206 ts = Adafruit_FT6206();
 
-int redMarker[144][2];
-int greenMarker[144][2];
-int blueMarker[144][2];
-int brightnessMarker[144][2];
 
-String marker;
+int brightnessBarY = 40;
+int redBarY = 90;
+int greenBarY = 130;
+int blueBarY = 170;
+
+String bar;
 
 int R,G,B,BRIGHT;
 
@@ -58,11 +59,10 @@ void setup() {
   tft.begin();
   ts.begin();
 
-  tft.setRotation(1);
+  tft.setRotation(1); 
+  tft.setTextSize(2);
 
   display();
-
-  populateArrays();
 
   R = 255;
   G = 255;
@@ -76,17 +76,17 @@ void loop() {
   
 
   if(ts.touched()){
-    markerClicked();
-    if(marker=="red"){
+    barClicked();
+    if(bar=="red"){
       modulateRed();
-    }else if(marker=="green"){
+    }else if(bar=="green"){
       modulateGreen();
-    }else if(marker=="blue"){
+    }else if(bar=="blue"){
       modulateBlue();
-    }else if(marker=="brightness"){
+    }else if(bar=="brightness"){
       modulateBrightness();
     }
-    marker = "";
+    bar = "";
   }
 
   tolerateFirstOutBound = false;
@@ -94,19 +94,18 @@ void loop() {
   lightLamp();
 }
 
-void markerClicked(){
+void barClicked(){
   TS_Point p = ts.getPoint();
   p.x = ::map(p.x, 0, 240, 240, 0);
   p.y = ::map(p.y, 0, 320, 320, 0);
   int x = tft.width() - p.y;
   int y = p.x;
+  int redY = redBarY-3;
+  int greenY = greenBarY-3;
+  int blueY = blueBarY-3;
+  int brightnessY = brightnessBarY-3;
 
-  int redY = redMarker[0][1];
-  int greenY = greenMarker[0][1];
-  int blueY = blueMarker[0][1];
-  int brightnessY = brightnessMarker[0][1];
-
-  for(int i = 0; i < 18 ; i++){
+  for(int i = 0; i < 12 ; i++){
 
     ++redY;
     ++greenY;
@@ -114,65 +113,68 @@ void markerClicked(){
     ++brightnessY;
 
     if(redY == y){
-      marker = "red";
+      bar = "red";
     }else if(greenY == y){
-      marker = "green";
+      bar = "green";
     }else if(blueY == y){
-      marker = "blue";
+      bar = "blue";
     }else if(brightnessY == y){
-      marker = "brightness";
+      bar = "brightness";
     }
   }
 }
 
 void display(){
-  tft.setTextSize(2);
-  
+
+  brightnessInput();
+
+  redInput();
+
+  greenInput();
+
+  blueInput();
+
+  displayColorOnScreen();
+}
+
+void brightnessInput(){
   tft.setCursor(90,10);
   tft.setTextColor(ILI9341_WHITE);
   tft.println("Brightness");
 
-  brightnessInput();
+  tft.fillRect(0, brightnessBarY, 300, 6,ILI9341_WHITE);
+}
 
+void redInput(){
   tft.setCursor(0, 70);
   tft.setTextColor(ILI9341_RED);
   tft.println("RED");
 
-  redInput();
+  tft.fillRect(0, redBarY, 300, 6, ILI9341_RED);
+}
 
+void greenInput(){
   tft.setCursor(0, 110);
   tft.setTextColor(ILI9341_GREEN);
   tft.println("GREEN");
+  
+  tft.fillRect(0, greenBarY, 300, 6, ILI9341_GREEN);
+}
 
-  greenInput();
-
+void blueInput(){
   tft.setCursor(0, 150);
   tft.setTextColor(ILI9341_BLUE);
   tft.println("BLUE");
 
-  blueInput();
+  tft.fillRect(0, blueBarY, 300, 6, ILI9341_BLUE);
+}
 
+void displayColorOnScreen(){
   tft.setCursor(0, 200);
   tft.setTextColor(ILI9341_WHITE);
   tft.println("Led Color");
 
   tft.fillRoundRect(120, 193, 188, 30, 5, ILI9341_WHITE);
-}
-
-void brightnessInput(){
-  tft.fillRect(0, 40, 300, 6,ILI9341_WHITE);
-}
-
-void redInput(){
-  tft.fillRect(0, 90, 300, 6, ILI9341_RED);
-}
-
-void greenInput(){
-  tft.fillRect(0, 130, 300, 6, ILI9341_GREEN);
-}
-
-void blueInput(){
-  tft.fillRect(0, 170, 300, 6, ILI9341_BLUE);
 }
 
 void modulateRed(){
@@ -190,13 +192,13 @@ void modulateRed(){
 
     lightLamp();
 
-    updateRedStrap(X_axis);
+    updateRedBar(X_axis);
 
     updateColorOnScreen();
   }
 }
 
-void updateRedStrap(int x){
+void updateRedBar(int x){
   if(x <= 300){
     tft.fillRect(0, 90, 300, 6, ILI9341_BLACK);
     tft.fillRect(0, 90, x, 6, ILI9341_RED);
@@ -223,13 +225,13 @@ void modulateGreen(){
 
     lightLamp();
 
-    updateGreenStrap(X_axis);
+    updateGreenBar(X_axis);
 
     updateColorOnScreen();
   }
 }
 
-void updateGreenStrap(int x){
+void updateGreenBar(int x){
   if(x <= 300){
     tft.fillRect(0, 130, 300, 6, ILI9341_BLACK);
     tft.fillRect(0, 130, x, 6, ILI9341_GREEN);
@@ -254,7 +256,7 @@ void modulateBlue(){
 
     B = x;
 
-    updateBlueStrap(X_axis);
+    updateBlueBar(X_axis);
 
     updateColorOnScreen();
 
@@ -262,7 +264,7 @@ void modulateBlue(){
   }
 }
 
-void updateBlueStrap(int x){
+void updateBlueBar(int x){
   if(x <= 300){
     tft.fillRect(0, 170, 300, 6, ILI9341_BLACK);
     tft.fillRect(0, 170, x, 6, ILI9341_BLUE);
@@ -287,7 +289,7 @@ void modulateBrightness(){
 
     BRIGHT = x;
 
-    updateBrightnessStrap(X_axis);
+    updateBrightnessBar(X_axis);
 
     updateColorOnScreen();
 
@@ -295,7 +297,7 @@ void modulateBrightness(){
   }
 }
 
-void updateBrightnessStrap(int x){
+void updateBrightnessBar(int x){
   if(x <= 300){
     tft.fillRect(0, 40, 300, 6, ILI9341_BLACK);
     tft.fillRect(0, 40, x, 6, ILI9341_WHITE);
@@ -333,35 +335,6 @@ void lightLamp(){
   for (int i = 0; i < NUMPIXELS; i++) {
     pixels.setPixelColor(i, pixels.Color(R, G, B));
     pixels.show();
-  }
-}
-
-void populateArrays(){
-  int x = 300;
-  int redY = 84;
-  int greenY = 124;
-  int blueY = 164;
-  int brightnessY = 34;
-
-  for(int i = 0; i < 144; i++){
-    for(int j = 0; j < 8; j++){
-      redMarker[i][0] = x + j;
-      greenMarker[i][0] = x + j;
-      blueMarker[i][0] = x + j;
-      brightnessMarker[i][0] = x + j;
-
-      redMarker[i][1] = redY;
-      greenMarker[i][1] = greenY;
-      blueMarker[i][1] = blueY;
-      brightnessMarker[i][1] = brightnessY;
-
-      ++i;
-    }
-    --i;
-    ++redY;
-    ++greenY;
-    ++blueY;
-    ++brightnessY;
   }
 }
 
